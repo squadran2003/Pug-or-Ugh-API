@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 import datetime
 
 DOG_GENDER_CHOICES = (
@@ -42,7 +43,7 @@ class Dog(models.Model):
     age = models.IntegerField()
     gender = models.CharField(max_length=10, choices=DOG_GENDER_CHOICES, default='m')
     size = models.CharField(max_length=10, choices=DOG_SIZE_CHOICES, default='s')
-    created_at = models.DateTimeField(default= datetime.datetime.now)
+    created_at = models.DateTimeField(default= timezone.now)
 
     def __str__(self):
         return self.name
@@ -54,7 +55,7 @@ class UserDog(models.Model):
     user = models.ForeignKey(User,related_name='user')
     dog = models.ForeignKey(Dog,related_name='users_dog')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='l')
-    created_at = models.DateTimeField(default= datetime.datetime.now)
+    created_at = models.DateTimeField(default= timezone.now)
 
     def __str__(self):
         return "{} : {}".format(self.user, self.dog)
@@ -67,7 +68,7 @@ class UserPref(models.Model):
     age =  models.CharField(max_length=10, choices=PREF_AGE_CHOICES, default='b')
     gender = models.CharField(max_length=5, choices= PREF_GENDER,default='m')
     size = models.CharField(max_length=5, choices= PREF_SIZE,default='s')
-    created_at = models.DateTimeField(default= datetime.datetime.now)
+    created_at = models.DateTimeField(default= timezone.now)
 
     def __str__(self):
         return self.user
