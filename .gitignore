@@ -16,7 +16,6 @@ downloads/
 eggs/
 .eggs/
 lib/
-lib/python3.6
 lib64/
 parts/
 sdist/
