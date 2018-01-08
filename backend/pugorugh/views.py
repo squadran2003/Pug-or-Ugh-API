@@ -11,8 +11,8 @@ class UserRegisterView(generics.CreateAPIView):
     model = get_user_model()
     serializer_class = serializers.UserSerializer
 
-class SetUserPrefView(generics.ListCreateAPIView,
-                        mixins.CreateModelMixin):
+class UserPrefUpdateView(generics.ListCreateAPIView,
+                        generics.UpdateAPIView):
     queryset = UserPref.objects.all()
     serializer_class = serializers.UserPrefSerializer
 

@@ -11,7 +11,7 @@ from .views import *
 urlpatterns = format_suffix_patterns([
     url(r'^api/user/login/$', obtain_auth_token, name='login-user'),
     url(r'^api/dog/(?P<pk>\d+)/liked/next/$',DoglikedView.as_view(), name='dog-liked'),
-    url(r'^api/user/preferences/$',SetUserPrefView.as_view(), name='user-pref-detail'),
+    url(r'^api/user/preferences/$',UserPrefUpdateView.as_view(), name='userpref-detail'),
     url(r'^api/user/$', UserRegisterView.as_view(), name='register-user'),
     url(r'^favicon\.ico$',
         RedirectView.as_view(
