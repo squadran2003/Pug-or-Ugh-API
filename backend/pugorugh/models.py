@@ -26,8 +26,8 @@ PREF_AGE_CHOICES = (
     ('s','senior')
 )
 PREF_GENDER = (
-    ('l','Liked'),
-    ('d','disliked')
+    ('m',"male"),
+    ('f','female'),
 )
 PREF_SIZE = (
     ('s','small'),
@@ -63,6 +63,12 @@ class UserDog(models.Model):
     class Meta:
         ordering = ('-created_at',)
 
+
+class DefaultUserPref(models.Manager):
+    def create_default_pref(self, loggedin_user):
+        self.create(user=loggedin_user)
+    
+
 class UserPref(models.Model):
     user = models.ForeignKey(User, related_name='user_pref')
     age =  models.CharField(max_length=10, choices=PREF_AGE_CHOICES, default='b')
@@ -70,11 +76,16 @@ class UserPref(models.Model):
     size = models.CharField(max_length=5, choices= PREF_SIZE,default='s')
     created_at = models.DateTimeField(default= timezone.now)
 
+    objects = DefaultUserPref()
+    
     def __str__(self):
-        return self.user
+        return str(self.pk)
     
     class Meta:
         ordering = ('-created_at',)
+    
+
+
 
 
 
