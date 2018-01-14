@@ -10,8 +10,12 @@ from .views import *
 # API endpoints
 urlpatterns = format_suffix_patterns([
     url(r'^api/user/login/$', obtain_auth_token, name='login-user'),
-    url(r'^api/dog/(?P<pk>\d+)/liked/next/$',ListCreateDogView.as_view(), name='dog-liked'),
-    url(r'^api/user/preferences/$',ListCreateUpdateUserPref.as_view(), name='userpref-detail'),
+    url(r'^api/dog/(?P<pk>\d+)/liked/$',UserDoglikedView.as_view(), 
+                                            name='dog_liked_detail'),
+    url(r'^api/dog/(?P<pk>\d+)/liked/next/$',UserDoglikedNextView.as_view(), 
+                                            name='dog_liked_next_detail'),
+    url(r'^api/user/preferences/$',ListCreateUpdateUserPref.as_view(), 
+                                            name='userpref-detail'),
     url(r'^api/user/$', UserRegisterView.as_view(), name='register-user'),
     url(r'^favicon\.ico$',
         RedirectView.as_view(
