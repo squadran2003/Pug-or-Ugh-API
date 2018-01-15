@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
@@ -45,28 +46,52 @@ class UserDoglikedView(generics.ListCreateAPIView,
 
     def queryset(self):
         user_pref = UserPref.objects.get(user=self.request.user)
-        dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
+        try:
+            dog = get_object_or_404(Dog,pk=self.kwargs.get('id'))
+        except Dog.DoesNotExist:
+            dog = Dog.objects.get(
+                breed=user_pref.breed,
+                age=user_pref.age,
+                gender=user_pref.gender,
+                size=user_pref.size
+            )
         return UserDog.objects.filter(user=self.request.user,
-                                        dog=dog,
-                                        liked='l')
-    def get_object(self):
-        queryset = self.get_queryset()
-        dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
-        obj = get_object_or_404(user=self.request.user,
-                                dog=dog)
-        return obj
+                                      dog=dog,liked='l')
 
 class UserDoglikedNextView(generics.ListCreateAPIView,
                             generics.UpdateAPIView):
-    queryset = UserDog.objects.all()
+    queryset= UserDog.objects.all()
     serializer_class = serializers.UserDog
 
     def queryset(self):
-        user_pref = UserPref.objects.get(user=self.request.user)
-        dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
+        print("this is a test")
         return UserDog.objects.filter(user=self.request.user,
-                                        dog=dog,
-                                        liked='l').order_by('id')[:1]
+                                        liked='l')
+    
+    def get_object(self):
+        queryset = self.get_queryset()
+        #get the users pref
+        user_pref = UserPref.objects.get(user=self.request.user)
+        #try getting the dog if the passed in pk if not try getting the 
+        #first matched dog
+        try:
+            dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
+        except Dog.DoesNotExist:
+            dog = Dog.objects.get(
+                breed = user_pref.breed,
+                age = user_pref.age,
+                size = user_pref.size,
+                gender = user_pref.gender
+            )
+        obj = get_object_or_404(queryset,pk=dog.id)
+        return obj
+
+    
+
+
+
+
+        
 
 
 
