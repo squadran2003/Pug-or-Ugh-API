@@ -3,10 +3,11 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, mixins
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
-from . import serializers
+from .serializers import *
 from .models import *
 
 
@@ -15,7 +16,7 @@ class UserRegisterView(generics.CreateAPIView):
     model = get_user_model()
 
     def post(self,format=None):
-        serializer = serializers.UserSerializer(data=self.request.data)
+        serializer = UserSerializer(data=self.request.data)
         if serializer.is_valid():
             user = serializer.save()
             UserPref.objects.create_default_pref(user)
@@ -26,69 +27,52 @@ class UserRegisterView(generics.CreateAPIView):
 class ListCreateUpdateUserPref(generics.ListCreateAPIView,
                                 generics.UpdateAPIView):
     queryset = UserPref.objects.all()
-    serializer_class = serializers.UserPrefSerializer
+    serializer_class = UserPrefSerializer
     
-
-    def get_queryset(self):
-        queryset = UserPref.objects.filter(user=self.request.user)
-        return queryset
 
     def get_object(self):
         queryset = self.get_queryset()
         obj = get_object_or_404(queryset,user=self.request.user)
         return obj
 
-    
-class UserDoglikedView(generics.ListCreateAPIView,
-                            generics.UpdateAPIView):
+
+class UserDoglikedView(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserDog.objects.all()
-    serializer_class = serializers.UserDog
+    serializer_class = UserDogSerializer
 
-    def queryset(self):
-        user_pref = UserPref.objects.get(user=self.request.user)
-        try:
-            dog = get_object_or_404(Dog,pk=self.kwargs.get('id'))
-        except Dog.DoesNotExist:
-            dog = Dog.objects.get(
-                breed=user_pref.breed,
-                age=user_pref.age,
-                gender=user_pref.gender,
-                size=user_pref.size
-            )
-        return UserDog.objects.filter(user=self.request.user,
-                                      dog=dog,liked='l')
+    def get_queryset(self):
+        return self.queryset.filter(
+            user= self.request.user,
+            dog=self.get_object()
+    )
 
-class UserDoglikedNextView(generics.ListCreateAPIView,
-                            generics.UpdateAPIView):
-    queryset= UserDog.objects.all()
-    serializer_class = serializers.UserDog
-
-    def queryset(self):
-        print("this is a test")
-        return UserDog.objects.filter(user=self.request.user,
-                                        liked='l')
-    
     def get_object(self):
-        queryset = self.get_queryset()
-        #get the users pref
-        user_pref = UserPref.objects.get(user=self.request.user)
-        #try getting the dog if the passed in pk if not try getting the 
-        #first matched dog
-        try:
-            dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
-        except Dog.DoesNotExist:
-            dog = Dog.objects.get(
-                breed = user_pref.breed,
-                age = user_pref.age,
-                size = user_pref.size,
-                gender = user_pref.gender
-            )
-        obj = get_object_or_404(queryset,pk=dog.id)
-        return obj
+        dog_id = self.kwargs.get('pk')
+        if int(dog_id)< 1:
+            dog_id = 1
+        return get_object_or_404(Dog,pk=dog_id)
+
+
+
+
 
     
 
 
+
+        
+        
+class UserDogDislikedView(generics.ListCreateAPIView,
+                            generics.UpdateAPIView):
+    pass
+
+class UserDogUndecidedView(generics.ListCreateAPIView,
+                            generics.RetrieveUpdateDestroyAPIView):
+    pass
+
+
+class UserDogUndecidedNextView(APIView):
+    pass
 
 
         

@@ -17,7 +17,8 @@ DOG_SIZE_CHOICES = (
 )
 STATUS_CHOICES = (
     ('l','Liked'),
-    ('d','disliked')
+    ('d','disliked'),
+    ('U','undicided')
 )
 PREF_AGE_CHOICES = (
     ('b','baby'),
@@ -40,13 +41,13 @@ class Dog(models.Model):
     name = models.CharField(max_length=50)
     image_filename = models.CharField(max_length=100)
     breed = models.CharField(max_length=50)
-    age = models.IntegerField()
+    age = models.CharField(max_length=10, choices=PREF_AGE_CHOICES, default='b')
     gender = models.CharField(max_length=10, choices=DOG_GENDER_CHOICES, default='m')
     size = models.CharField(max_length=10, choices=DOG_SIZE_CHOICES, default='s')
     created_at = models.DateTimeField(default= timezone.now)
 
     def __str__(self):
-        return self.name
+        return self.name+str(self.pk)
     
     class Meta:
         ordering = ('-created_at',)
@@ -54,7 +55,7 @@ class Dog(models.Model):
 class UserDog(models.Model):
     user = models.ForeignKey(User,related_name='user')
     dog = models.ForeignKey(Dog,related_name='users_dog')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='l')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='U')
     created_at = models.DateTimeField(default= timezone.now)
 
     def __str__(self):

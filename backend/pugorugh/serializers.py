@@ -28,6 +28,8 @@ class UserDogSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDog
 
+ 
+
 
 class UserPrefSerializer(serializers.ModelSerializer):
     class Meta:
