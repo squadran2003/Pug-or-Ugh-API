@@ -36,21 +36,26 @@ class ListCreateUpdateUserPref(generics.ListCreateAPIView,
         return obj
 
 
-class UserDoglikedView(generics.RetrieveUpdateDestroyAPIView):
+class UserDoglikedView(generics.UpdateAPIView):
     queryset = UserDog.objects.all()
     serializer_class = UserDogSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(
-            user= self.request.user,
-            dog=self.get_object()
-    )
 
     def get_object(self):
         dog_id = self.kwargs.get('pk')
         if int(dog_id)< 1:
             dog_id = 1
         return get_object_or_404(Dog,pk=dog_id)
+
+    def put(self, request, pk, format=None):
+        print("put was called")
+        print(self.request.user)
+        print(self.get_object())
+        print(self.request.data.get('status'))
+        dog = self.get_object()
+        self.update(request,user=self.request.user,
+                    dog=dog,status=self.request.data.get('status'))
+        return Response("Record updated",status=status.HTTP_200_OK)
+        
 
 
 
