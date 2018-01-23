@@ -14,8 +14,6 @@ urlpatterns = format_suffix_patterns([
                                             name='dog-liked'),
     url(r'^api/dog/(?P<pk>-?\d+)/disliked/$',UserDogDislikedView.as_view(), 
                                             name='dog-disliked'),
-    url(r'^api/dog/(?P<pk>-?\d+)/undecided/$',UserDogUndecidedView.as_view(), 
-                                            name='dog-undecided'),
     url(r'^api/dog/(?P<pk>-?\d+)/undecided/next/$',UserDogUndecidedNextView.as_view(), 
                                             name='dog-undecided'),
     url(r'^api/user/preferences/$',ListCreateUpdateUserPref.as_view(), 

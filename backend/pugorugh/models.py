@@ -35,7 +35,10 @@ PREF_SIZE = (
     ('m','medium'),
     ('l','large'),
     ('xl','extra large')
+
 )
+
+
 
 class Dog(models.Model):
     name = models.CharField(max_length=50)
@@ -46,11 +49,16 @@ class Dog(models.Model):
     size = models.CharField(max_length=10, choices=DOG_SIZE_CHOICES, default='s')
     created_at = models.DateTimeField(default= timezone.now)
 
+
     def __str__(self):
         return self.name+str(self.pk)
     
     class Meta:
         ordering = ('-created_at',)
+    
+
+    
+
 
 class UserDog(models.Model):
     user = models.ForeignKey(User,related_name='user')

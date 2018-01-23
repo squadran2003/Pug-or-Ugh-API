@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, mixins
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.http import Http404
 
 from .serializers import *
 from .models import *
@@ -53,31 +54,58 @@ class UserDoglikedView(generics.UpdateAPIView):
         print(self.request.data.get('status'))
         dog = self.get_object()
         self.update(request,user=self.request.user,
-                    dog=dog,status=self.request.data.get('status'))
-        return Response("Record updated",status=status.HTTP_200_OK)
+                    dog=dog,status='l')
+        return Response("dog liked",status=status.HTTP_200_OK)
         
 
+class UserDogDislikedView(generics.UpdateAPIView):
+    queryset = UserDog.objects.all()
+    serializer_class = UserDogSerializer
 
+    def get_object(self):
+        dog_id = self.kwargs.get('pk')
+        if int(dog_id)< 1:
+            dog_id = 1
+        return get_object_or_404(Dog,pk=dog_id)
 
+    def put(self, request, pk, format=None):
+        print("put was called")
+        print(self.request.user)
+        print(self.get_object())
+        print(self.request.data.get('status'))
+        dog = self.get_object()
+        self.update(request,user=self.request.user,
+                    dog=dog,status='d')
+        return Response("Dog disliked",status=status.HTTP_200_OK)
 
-
-    
-
-
-
-        
-        
-class UserDogDislikedView(generics.ListCreateAPIView,
-                            generics.UpdateAPIView):
-    pass
 
 class UserDogUndecidedView(generics.ListCreateAPIView,
                             generics.RetrieveUpdateDestroyAPIView):
     pass
 
 
-class UserDogUndecidedNextView(APIView):
-    pass
+class UserDogUndecidedNextView(generics.RetrieveAPIView):
+    #queryset = UserDog.objects.all()
+    serializer_class = UserDogSerializer
+
+
+    def get_queryset(self):
+        return UserDog.objects.filter(status='U')
+
+    def get_object(self):
+        dog_id = self.kwargs.get('pk')
+        record= self.get_queryset().filter(pk__gt=dog_id,
+                                        user=self.request.user).first()
+        print(record)
+        return record
+
+    def get(self, request, pk, format=None):
+        record = self.get_object()
+        if not record:
+            raise Http404()
+        serializer = DogSerializer(record.dog)
+        return Response(serializer.data)
+
 
 
         
