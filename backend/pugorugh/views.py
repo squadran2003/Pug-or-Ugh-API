@@ -20,6 +20,7 @@ class UserRegisterView(generics.CreateAPIView):
         serializer = UserSerializer(data=self.request.data)
         if serializer.is_valid():
             user = serializer.save()
+            # set user with default preferences when account created
             UserPref.objects.create_default_pref(user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -36,47 +37,36 @@ class ListCreateUpdateUserPref(generics.ListCreateAPIView,
         obj = get_object_or_404(queryset,user=self.request.user)
         return obj
 
+    def put(self, request, *args, **kwargs):
+        user_pref= self.get_object()
+        print(user_pref.age)
+        print(user_pref.gender)
+        print(user_pref.size)
+
+        # gets all the dogs that match the user pref
+        dogs = Dog.objects.filter(
+            age="baby",
+            gender="female",
+            size="small"
+        )
+        # load all the dogs as undecided
+        for dog in dogs:
+            UserDog.objects.create(
+                user=self.request.user,
+                dog=dog,
+
+            )
+        print(dogs)
+        return self.update(request,*args,**kwargs)
+
+
 
 class UserDoglikedView(generics.UpdateAPIView):
-    queryset = UserDog.objects.all()
-    serializer_class = UserDogSerializer
-
-    def get_object(self):
-        dog_id = self.kwargs.get('pk')
-        if int(dog_id)< 1:
-            dog_id = 1
-        return get_object_or_404(Dog,pk=dog_id)
-
-    def put(self, request, pk, format=None):
-        print("put was called")
-        print(self.request.user)
-        print(self.get_object())
-        print(self.request.data.get('status'))
-        dog = self.get_object()
-        self.update(request,user=self.request.user,
-                    dog=dog,status='l')
-        return Response("dog liked",status=status.HTTP_200_OK)
+    pass
         
 
 class UserDogDislikedView(generics.UpdateAPIView):
-    queryset = UserDog.objects.all()
-    serializer_class = UserDogSerializer
-
-    def get_object(self):
-        dog_id = self.kwargs.get('pk')
-        if int(dog_id)< 1:
-            dog_id = 1
-        return get_object_or_404(Dog,pk=dog_id)
-
-    def put(self, request, pk, format=None):
-        print("put was called")
-        print(self.request.user)
-        print(self.get_object())
-        print(self.request.data.get('status'))
-        dog = self.get_object()
-        self.update(request,user=self.request.user,
-                    dog=dog,status='d')
-        return Response("Dog disliked",status=status.HTTP_200_OK)
+    pass
 
 
 class UserDogUndecidedView(generics.ListCreateAPIView,
@@ -90,19 +80,19 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
 
 
     def get_queryset(self):
-        return UserDog.objects.filter(status='U')
+        return UserDog.objects.filter(status='U',user=self.request.user)
 
     def get_object(self):
         dog_id = self.kwargs.get('pk')
-        record= self.get_queryset().filter(pk__gt=dog_id,
-                                        user=self.request.user).first()
-        print(record)
+        # reverse relationship here
+        record= self.get_queryset().filter(dog_id__gt=dog_id).first()
         return record
 
     def get(self, request, pk, format=None):
         record = self.get_object()
         if not record:
-            raise Http404()
+            # if last dog is reached, go back to the first one
+            record = self.get_queryset().first()
         serializer = DogSerializer(record.dog)
         return Response(serializer.data)
 
