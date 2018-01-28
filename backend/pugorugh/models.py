@@ -20,12 +20,6 @@ STATUS_CHOICES = (
     ('d','disliked'),
     ('U','undicided')
 )
-PREF_AGE_CHOICES = (
-    ('b','baby'),
-    ('y','young'),
-    ('a','adult'),
-    ('s','senior')
-)
 PREF_GENDER = (
     ('m',"male"),
     ('f','female'),
@@ -37,6 +31,12 @@ PREF_SIZE = (
     ('xl','extra large')
 
 )
+PREF_AGE  = (
+    ('b','baby'),
+    ('y','young'),
+    ('a','adult'),
+    ('s','senior'),
+)
 
 
 
@@ -44,7 +44,7 @@ class Dog(models.Model):
     name = models.CharField(max_length=50)
     image_filename = models.CharField(max_length=100)
     breed = models.CharField(max_length=50)
-    age = models.CharField(max_length=10, choices=PREF_AGE_CHOICES, default='b')
+    age = models.IntegerField(default=12)
     gender = models.CharField(max_length=10, choices=DOG_GENDER_CHOICES, default='m')
     size = models.CharField(max_length=10, choices=DOG_SIZE_CHOICES, default='s')
     created_at = models.DateTimeField(default= timezone.now)
@@ -80,7 +80,7 @@ class DefaultUserPref(models.Manager):
 
 class UserPref(models.Model):
     user = models.ForeignKey(User, related_name='user_pref')
-    age =  models.CharField(max_length=10, choices=PREF_AGE_CHOICES, default='b')
+    age = models.CharField(max_length=5, choices= PREF_AGE,default='b')
     gender = models.CharField(max_length=5, choices= PREF_GENDER,default='m')
     size = models.CharField(max_length=5, choices= PREF_SIZE,default='s')
     created_at = models.DateTimeField(default= timezone.now)

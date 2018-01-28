@@ -26,38 +26,17 @@ class UserRegisterView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ListCreateUpdateUserPref(generics.ListCreateAPIView,
-                                generics.UpdateAPIView):
+
+class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
+    
     queryset = UserPref.objects.all()
     serializer_class = UserPrefSerializer
-    
+
 
     def get_object(self):
         queryset = self.get_queryset()
         obj = get_object_or_404(queryset,user=self.request.user)
         return obj
-
-    def put(self, request, *args, **kwargs):
-        user_pref= self.get_object()
-        print(user_pref.age)
-        print(user_pref.gender)
-        print(user_pref.size)
-
-        # gets all the dogs that match the user pref
-        dogs = Dog.objects.filter(
-            age="baby",
-            gender="female",
-            size="small"
-        )
-        # load all the dogs as undecided
-        for dog in dogs:
-            UserDog.objects.create(
-                user=self.request.user,
-                dog=dog,
-
-            )
-        print(dogs)
-        return self.update(request,*args,**kwargs)
 
 
 
@@ -86,6 +65,8 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         dog_id = self.kwargs.get('pk')
         # reverse relationship here
         record= self.get_queryset().filter(dog_id__gt=dog_id).first()
+        print(record.dog.age)
+        print(record.dog.gender)
         return record
 
     def get(self, request, pk, format=None):

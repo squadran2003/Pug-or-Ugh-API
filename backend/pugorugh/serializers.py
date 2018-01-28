@@ -23,6 +23,7 @@ class DogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dog
 
+
 class UserDogSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -34,5 +35,7 @@ class UserDogSerializer(serializers.ModelSerializer):
 class UserPrefSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPref
-        fields = ('age','gender','size','created_at')
+
+
+
 
