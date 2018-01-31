@@ -21,10 +21,11 @@ class UserRegisterView(generics.CreateAPIView):
         if serializer.is_valid():
             user = serializer.save()
             # set user with default preferences when account created
-            UserPref.objects.create_default_pref(user)
+            user_pref = UserPref.create_default_pref(user)
+            dogs = UserPref.get_dogs(user_pref)
+            UserDog.load_user_dogs(dogs,self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
@@ -32,11 +33,17 @@ class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
     queryset = UserPref.objects.all()
     serializer_class = UserPrefSerializer
 
-
     def get_object(self):
         queryset = self.get_queryset()
         obj = get_object_or_404(queryset,user=self.request.user)
         return obj
+
+    def put(self, request, *args, **kwargs):
+        user_pref = self.get_object()
+        dogs = UserPref.get_dogs(user_pref)
+        UserDog.load_user_dogs(dogs,self.request.user)
+        return self.update(request, *args, **kwargs)
+
 
 
 
@@ -65,8 +72,6 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         dog_id = self.kwargs.get('pk')
         # reverse relationship here
         record= self.get_queryset().filter(dog_id__gt=dog_id).first()
-        print(record.dog.age)
-        print(record.dog.gender)
         return record
 
     def get(self, request, pk, format=None):

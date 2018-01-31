@@ -51,14 +51,11 @@ class Dog(models.Model):
 
 
     def __str__(self):
-        return self.name+str(self.pk)
+        return self.name+str(self.age)
     
     class Meta:
         ordering = ('-created_at',)
     
-
-    
-
 
 class UserDog(models.Model):
     user = models.ForeignKey(User,related_name='user')
@@ -71,27 +68,77 @@ class UserDog(models.Model):
     
     class Meta:
         ordering = ('-created_at',)
-
-
-class DefaultUserPref(models.Manager):
-    def create_default_pref(self, loggedin_user):
-        self.create(user=loggedin_user)
     
+    @classmethod
+    def load_user_dogs(cls,dogs,user):
+        """loads all dogs into userdog model"""
+        if dogs:
+            for dog in dogs:
+                try:
+                    print("try to get the dog")
+                    cls.objects.get(
+                        user=user,
+                        dog=dog
+                    )
+                except:
+                    print("tried to create dog")
+                    cls.objects.create(
+                        user=user,
+                        dog=dog
+                    )
+                else:
+                    print("tried to update dog")
+                    cls.objects.update(
+                        user=user,
+                        dog=dog
+                    )
 
+    
 class UserPref(models.Model):
     user = models.ForeignKey(User, related_name='user_pref')
-    age = models.CharField(max_length=5, choices= PREF_AGE,default='b')
-    gender = models.CharField(max_length=5, choices= PREF_GENDER,default='m')
-    size = models.CharField(max_length=5, choices= PREF_SIZE,default='s')
+    age = models.CharField(max_length=10,default='b')
+    gender = models.CharField(max_length=10, choices= PREF_GENDER,default='m')
+    size = models.CharField(max_length=10, choices= PREF_SIZE,default='s')
     created_at = models.DateTimeField(default= timezone.now)
 
-    objects = DefaultUserPref()
     
     def __str__(self):
         return str(self.pk)
     
     class Meta:
         ordering = ('-created_at',)
+    
+    @classmethod
+    def create_default_pref(cls, loggedin_user):
+        """give a user default prefs when user registers"""
+        user_pref = cls.objects.create(user=loggedin_user)
+        return user_pref
+    
+    @classmethod
+    def get_dogs(cls,user_pref):
+        """get all dogs based on past in pref"""
+        dogs = Dog.objects.filter(
+            age__range=validate_dog_age(user_pref.age),
+            gender=user_pref.gender,
+            size=user_pref.size
+        )
+        return dogs
+    
+
+
+
+def validate_dog_age(letter):
+    """this function takes a letter as age 
+    and returns a tuple or range of ages"""
+    if letter.lower() =='b':
+        return (1,7)
+    elif letter.lower() == 'y':
+        return (7,13)
+    elif letter.lower() == 'a':
+        return (13,25)
+    else:
+        return (25,80)
+
     
 
 

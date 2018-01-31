@@ -30,12 +30,7 @@ class UserDogSerializer(serializers.ModelSerializer):
         model = UserDog
 
  
-
-
 class UserPrefSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPref
-
-
-
-
+        extra_kwargs = {'user': {'required': False}}
