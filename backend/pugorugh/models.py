@@ -74,24 +74,15 @@ class UserDog(models.Model):
         """loads all dogs into userdog model"""
         if dogs:
             for dog in dogs:
-                try:
-                    print("try to get the dog")
-                    cls.objects.get(
+                cls.objects.create(
                         user=user,
                         dog=dog
                     )
-                except:
-                    print("tried to create dog")
-                    cls.objects.create(
-                        user=user,
-                        dog=dog
-                    )
-                else:
-                    print("tried to update dog")
-                    cls.objects.update(
-                        user=user,
-                        dog=dog
-                    )
+
+    
+    @classmethod
+    def remove_user_dogs(cls, user):
+        cls.objects.filter(user=user).delete()
 
     
 class UserPref(models.Model):

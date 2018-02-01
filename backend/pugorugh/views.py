@@ -22,7 +22,9 @@ class UserRegisterView(generics.CreateAPIView):
             user = serializer.save()
             # set user with default preferences when account created
             user_pref = UserPref.create_default_pref(user)
+            #get all dogs based on default prefs
             dogs = UserPref.get_dogs(user_pref)
+            # load dogs into userdog table based on default prefs
             UserDog.load_user_dogs(dogs,self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -40,7 +42,11 @@ class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         user_pref = self.get_object()
+        #remove all previously saved dogs
+        UserDog.remove_user_dogs(self.request.user)
+        # get a new list of dogs
         dogs = UserPref.get_dogs(user_pref)
+        #load new list of dgs to userdog table
         UserDog.load_user_dogs(dogs,self.request.user)
         return self.update(request, *args, **kwargs)
 
