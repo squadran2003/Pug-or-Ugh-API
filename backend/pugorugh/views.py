@@ -44,7 +44,6 @@ class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
         user_pref = self.get_object()
         #remove all previously saved dogs
         UserDog.remove_user_dogs(self.request.user)
-        # get a new list of dogs
         dogs = UserPref.get_dogs(user_pref)
         #load new list of dgs to userdog table
         UserDog.load_user_dogs(dogs,self.request.user)
