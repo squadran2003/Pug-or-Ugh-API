@@ -22,10 +22,6 @@ class UserRegisterView(generics.CreateAPIView):
             user = serializer.save()
             # set user with default preferences when account created
             user_pref = UserPref.create_default_pref(user)
-            #get all dogs based on default prefs
-            dogs = UserPref.get_dogs(user_pref)
-            # load dogs into userdog table based on default prefs
-            UserDog.load_user_dogs(dogs,self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -42,12 +38,11 @@ class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         user_pref = self.get_object()
-        #remove all previously saved dogs
-        UserDog.remove_user_dogs(self.request.user)
-        dogs = UserPref.get_dogs(user_pref)
-        #load new list of dgs to userdog table
-        UserDog.load_user_dogs(dogs,self.request.user)
-        return self.update(request, *args, **kwargs)
+        pref = UserPrefSerializer(user_pref,request.data)
+        if pref.is_valid():
+            pref.save()
+            return Response(pref.data)
+        return Response(pref.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -66,26 +61,52 @@ class UserDogUndecidedView(generics.ListCreateAPIView,
 
 
 class UserDogUndecidedNextView(generics.RetrieveAPIView):
-    #queryset = UserDog.objects.all()
-    serializer_class = UserDogSerializer
+    queryset = Dog.objects.all()
+    serializer_class = DogSerializer
 
 
     def get_queryset(self):
-        return UserDog.objects.filter(status='U',user=self.request.user)
+        user_pref = UserPref.objects.get(user=self.request.user)
+        queryset = Dog.objects.filter(
+            age__range=validate_dog_age(user_pref.age),
+            gender__in=user_pref.gender,
+            size__in=user_pref.size
+        ).order_by('pk')
+        return queryset
 
     def get_object(self):
         dog_id = self.kwargs.get('pk')
-        # reverse relationship here
-        record= self.get_queryset().filter(dog_id__gt=dog_id).first()
-        return record
+        # if the initial queryset is empty raise 404
+        if not self.get_queryset():
+            raise Http404
+        dog= self.get_queryset().filter(id__gt=dog_id).first()
+        return dog
+        
 
     def get(self, request, pk, format=None):
-        record = self.get_object()
-        if not record:
-            # if last dog is reached, go back to the first one
-            record = self.get_queryset().first()
-        serializer = DogSerializer(record.dog)
+        dog = self.get_object()
+        serializer = DogSerializer(dog)
         return Response(serializer.data)
+
+
+def validate_dog_age(letter):
+    """this function takes a letter as age 
+    and returns a tuple or range of ages"""
+    
+    if "s,b,y,a" in letter:
+        return (1,84)
+    elif "s,b" in letter:
+        return (1,24)
+    elif "y,a" in letter:
+        return (25,84)
+    elif 'b' in letter:
+        return (1,12)
+    elif 's' in letter:
+        return (12,24)
+    elif 'y' in letter:
+        return (25,36)
+    else:
+        return (45,80)
 
 
 
