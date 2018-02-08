@@ -72,8 +72,7 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
             age__range=validate_dog_age(user_pref.age),
             gender__in=user_pref.gender,
             size__in=user_pref.size
-        )
-        print(queryset)
+        ).order_by('pk')
         return queryset
 
     def get_object(self):
@@ -81,11 +80,12 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         # if the initial queryset is empty raise 404
         if not self.get_queryset():
             raise Http404
-        elif self.get_queryset()==[]:
-            return reverse('UserDogUndecidedNextView',request=self.request)
+        dog= self.get_queryset().filter(id__gt=dog_id).first()
+        if dog is not None:
+            return dog
         else:
-            dog= self.get_queryset().filter(id__gt=dog_id).first()
-        return dog
+            # go back to the first item in the querset
+            return self.get_queryset().first()
         
 
     def get(self, request, pk, format=None):
@@ -98,20 +98,20 @@ def validate_dog_age(letter):
     """this function takes a letter as age 
     and returns a tuple or range of ages"""
     
-    if "s,b,y,a" in letter:
-        return (1,84)
-    elif "s,b" in letter:
-        return (1,24)
-    elif "y,a" in letter:
-        return (25,84)
+    if "b,y,a,s" in letter:
+        return (1,97)
+    elif "b,y" in letter:
+        return (1,26)
+    elif "a,s" in letter:
+        return (25,97)
     elif 'b' in letter:
-        return (1,12)
-    elif 's' in letter:
-        return (12,24)
+        return (1,13)
     elif 'y' in letter:
-        return (25,36)
+        return (13,26)
+    elif 'a' in letter:
+        return (25,38)
     else:
-        return (45,80)
+        return (37,97)
 
 
 
