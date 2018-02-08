@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status, mixins
+from rest_framework.reverse import reverse
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.http import Http404
@@ -71,7 +72,8 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
             age__range=validate_dog_age(user_pref.age),
             gender__in=user_pref.gender,
             size__in=user_pref.size
-        ).order_by('pk')
+        )
+        print(queryset)
         return queryset
 
     def get_object(self):
@@ -79,7 +81,10 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         # if the initial queryset is empty raise 404
         if not self.get_queryset():
             raise Http404
-        dog= self.get_queryset().filter(id__gt=dog_id).first()
+        elif self.get_queryset()==[]:
+            return reverse('UserDogUndecidedNextView',request=self.request)
+        else:
+            dog= self.get_queryset().filter(id__gt=dog_id).first()
         return dog
         
 

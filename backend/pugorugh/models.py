@@ -85,6 +85,10 @@ class UserPref(models.Model):
     class Meta:
         ordering = ('-created_at',)
     
+    @classmethod
+    def create_default_pref(cls,user):
+        cls.objects.create(user=user)
+    
 
 
     
