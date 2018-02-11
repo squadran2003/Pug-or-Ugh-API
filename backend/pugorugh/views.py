@@ -49,16 +49,67 @@ class ListCreateUpdateUserPref(generics.RetrieveUpdateAPIView):
 
 
 class UserDoglikedView(generics.UpdateAPIView):
-    pass
+    queryset = UserDog.objects.all()
+    serializer_class = DogSerializer
+    
+    def get_object(self):
+        dog = get_object_or_404(Dog,pk=self.kwargs.get('pk'))
+        return dog
+    
+    def put(self,request, *args, **kwargs):
+        dog = self.get_object()
+        try:
+            UserDog.objects.get(
+                user=self.request.user,
+                dog=dog,
+            )
+        except UserDog.DoesNotExist:
+            "if the dog doesnt have a status create it"
+            UserDog.objects.create(
+                user = self.request.user,
+                dog=dog,
+                status='l'
+            )
+        else:
+            "else update the status"
+            UserDog.objects.filter(
+                user=self.request.user,
+                dog=dog,
+            ).update(status='l')
+
+        return Response("updated", status=status.HTTP_201_CREATED)
+
         
 
-class UserDogDislikedView(generics.UpdateAPIView):
-    pass
+class UserDoglikedNextView(generics.UpdateAPIView):
+    queryset = UserDog.objects.all()
+    serializer_class = DogSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(
+            user=self.request.user,
+            status='l',
+        ).order_by('pk')
+    
+    def get_object(self):
+        dog_id = self.kwargs.get('pk')
+        # if the initial queryset is empty raise 404
+        print(self.get_queryset())
+        if not self.get_queryset():
+            raise Http404
+        user_dog= self.get_queryset().filter(dog_id__gt=dog_id).first()
+        if user_dog is not None:
+            return user_dog
+        else:
+            # go back to the first item in the quersets
+            return self.get_queryset().first()
+    
+    def get(self, request, pk, format=None):
+        user_dog = self.get_object()
+        serializer = DogSerializer(user_dog.dog)
+        return Response(serializer.data)
 
 
-class UserDogUndecidedView(generics.ListCreateAPIView,
-                            generics.RetrieveUpdateDestroyAPIView):
-    pass
 
 
 class UserDogUndecidedNextView(generics.RetrieveAPIView):
@@ -72,7 +123,7 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
             age__range=validate_dog_age(user_pref.age),
             gender__in=user_pref.gender,
             size__in=user_pref.size
-        ).order_by('pk')
+        ).exclude(Q(users_dog__status='l')|Q(users_dog__status='d')).order_by('pk')
         return queryset
 
     def get_object(self):
