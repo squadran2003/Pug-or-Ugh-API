@@ -61,7 +61,7 @@ class UserDoglikedView(generics.UpdateAPIView):
                       'dog': dog, 'status': 'l'}
 
         )
-        if is_present:
+        if obj:
             obj.status = 'l'
             obj.save()
         return Response("updated to liked", status=status.HTTP_201_CREATED)
@@ -105,14 +105,16 @@ class UserDogDislikedView(generics.UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         dog = self.get_object()
-        obj, is_present = UserDog.objects.get_or_create(
+        print(self.request.user)
+        print(dog)
+        obj,is_present = UserDog.objects.get_or_create(
             user=self.request.user,
             dog=dog,
             defaults={'user': self.request.user,
                       'dog': dog, 'status': 'd'}
 
         )
-        if is_present:
+        if obj:
             obj.status = 'd'
             obj.save()
         return Response("updated to disliked", status=status.HTTP_201_CREATED)
