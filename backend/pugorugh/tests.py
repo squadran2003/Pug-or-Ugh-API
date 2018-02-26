@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from .models import Dog, UserPref, UserDog
@@ -70,7 +71,7 @@ class TestApiViews(TestCase):
         self.assertNotEqual(user_pref,None)
     
     def test_create_update_user_pref(self):
-        user = User.objects.create(
+        user = User.objects.create_user(
             username='tango',
             password='123'
             )
@@ -81,11 +82,10 @@ class TestApiViews(TestCase):
         self.assertNotEqual(response.status_code,400)
     
     def test_user_dog_liked_view(self):
-        user = User.objects.create(
-            username='tango',
-            password='123'
-            )
-        self.client.user = user
+        user = User.objects.create_user(username='tango',
+                                        password='123')
+        token = Token.objects.get(user=user).key
+        print(token)
         response = self.client.put(reverse('dog-liked',kwargs={'pk':'-1'}))
         self.assertEqual(response.status_code,201)
 
