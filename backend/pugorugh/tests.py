@@ -84,9 +84,9 @@ class TestApiViews(TestCase):
     def test_user_dog_liked_view(self):
         user = User.objects.create_user(username='tango',
                                         password='123')
-        token = Token.objects.get_or_create(user=user)
-        header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
-        response = self.client.put(reverse('dog-liked',kwargs={'pk':'-1'}),{},**header)
+        token, is_created = Token.objects.get_or_create(user=user)
+        headers = {'Authorization': 'Token {}'.format(token)}
+        response = self.client.put(reverse('dog-liked',kwargs={'pk':'-1'}),{},headers=headers)
         self.assertEqual(response.status_code,201)
 
 
