@@ -85,3 +85,11 @@ The following routes are expected by the JavaScript application.
 
 	* `/api/user/preferences/`
 
+## Tests
+* To run tests
+	* coverage run --source=pugorugh/ manage.py test
+
+## Test report
+* Test report
+	* coverage report -m
+

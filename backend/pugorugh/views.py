@@ -105,9 +105,7 @@ class UserDogDislikedView(generics.UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         dog = self.get_object()
-        print(self.request.user)
-        print(dog)
-        obj,is_present = UserDog.objects.get_or_create(
+        obj, is_present = UserDog.objects.get_or_create(
             user=self.request.user,
             dog=dog,
             defaults={'user': self.request.user,
